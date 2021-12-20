@@ -4,6 +4,96 @@ App = {
 
   init: async function() {
     // Load pets.
+    
+    let age = '';
+    let breed = '';
+    let pets = [];
+    $.getJSON('../pets.json', function(data) {
+      pets = data;
+      let ageSet = new Set();
+      let breedSet = new Set();
+
+      for (let i = 0; i < pets.length; i ++) {
+        App.appendPet(pets[i]);
+        ageSet.add(pets[i].age);
+        breedSet.add(pets[i].breed);
+      }
+
+      for (let item of ageSet) {
+        $("#ageSelect").append("<option value='"+item+"'>"+item+"</option>");
+      }
+
+      for (let item of breedSet) {
+        $("#breedSelect").append("<option value='"+item+"'>"+item+"</option>");
+      }
+    });
+
+    $('#ageSelect').change(function(){
+      if (age !== $(this).children('option:selected').val()) {
+        age = $(this).children('option:selected').val();
+        App.filterPet(pets, age, breed);
+      }
+    });
+
+    $('#breedSelect').change(function(){
+      if (breed !== $(this).children('option:selected').val()) {
+        breed = $(this).children('option:selected').val();
+        App.filterPet(pets, age, breed);
+      }
+    });
+
+    return await App.initWeb3();
+  },
+
+  appendPet: function(pet) {
+    let petsRow = $('#petsRow');
+    let petTemplate = $('#petTemplate');
+    petTemplate.find('.panel-title').text(pet.name);
+    petTemplate.find('img').attr('src', pet.picture);
+    petTemplate.find('.pet-breed').text(pet.breed);
+    petTemplate.find('.pet-age').text(pet.age);
+    petTemplate.find('.pet-location').text(pet.location);
+    petTemplate.find('.btn-adopt').attr('data-id', pet.id);
+    petsRow.append(petTemplate.html());
+  },
+
+  filterPet: function(pets, age, breed) {
+    let petsRow = $('#petsRow');
+    petsRow.empty();
+    for (let i = 0; i < pets.length; i ++) {
+      if (!age && !breed) {
+        App.appendPet(pets[i]);
+      } else {
+        if (!age && breed) {
+          if (breed === (pets[i].breed + '')) {
+            App.appendPet(pets[i]);
+          }
+        } else if (age && !breed) {
+          if (age === (pets[i].age + '')) {
+            App.appendPet(pets[i]);
+          }
+        } else {
+          if (age === (pets[i].age + '') && breed === (pets[i].breed + '')) {
+            App.appendPet(pets[i]);
+          }
+        }
+      }
+    }
+  },
+
+  initWeb3: async function() {
+
+    // Modern dapp browsers...
+if (window.ethereum) {
+  App.web3Provider = window.ethereum;
+  try {
+    // Request account access
+    await window.ethereum.enable();
+  } catch (error) {
+    // User denied account access...
+    console.error("User denied account access")
+  }
+}
     $.getJSON('../pets.json', function(data) {
       var petsRow = $('#petsRow');
       var petTemplate = $('#petTemplate');
