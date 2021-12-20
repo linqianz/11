@@ -119,5 +119,3 @@ web3 = new Web3(App.web3Provider);
 $(function() {
   $(window).load(function() {
     App.init();
-  });
-});
